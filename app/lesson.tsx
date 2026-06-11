@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, Pressable } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -28,8 +29,8 @@ Key benefits of stock ownership:
 Understanding stocks is the foundation of trading education.`,
     estimatedTime: 15,
     videoRecommendations: [
-      { id: "v1", title: "Stock Basics Explained", duration: 8, level: "Beginner" },
-      { id: "v2", title: "How to Read Stock Charts", duration: 12, level: "Beginner" },
+      { id: "v1", title: "Stock Basics Explained", duration: 8, level: "Beginner", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", watched: false, helpful: null },
+      { id: "v2", title: "How to Read Stock Charts", duration: 12, level: "Beginner", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", watched: false, helpful: null },
     ],
     quiz: [
       {
@@ -93,6 +94,7 @@ Understanding stocks is the foundation of trading education.`,
                   <TouchableOpacity
                     key={video.id}
                     className="bg-surface rounded-xl p-4 border border-border flex-row justify-between items-center"
+                    onPress={() => WebBrowser.openBrowserAsync(video.url)}
                   >
                     <View className="flex-1 gap-1">
                       <Text className="text-base font-semibold text-foreground">{video.title}</Text>
