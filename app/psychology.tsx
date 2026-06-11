@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, Pressable } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -28,6 +29,7 @@ export default function PsychologyScreen() {
       explanation:
         "The correct answer is B. Following your plan and maintaining discipline is crucial. Revenge trading (C) or increasing risk (A) often leads to bigger losses. Stick to your strategy.",
       skillsImproved: ["discipline", "emotionalControl"],
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     },
     {
       id: "s2",
@@ -41,6 +43,7 @@ export default function PsychologyScreen() {
       explanation:
         "The correct answer is B. Discipline means following your risk rules even when opportunities seem perfect. FOMO (fear of missing out) is a trader's enemy. There will always be more trades.",
       skillsImproved: ["discipline", "consistency"],
+      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     },
   ];
 
@@ -151,11 +154,25 @@ export default function PsychologyScreen() {
 
             {/* Explanation */}
             {showExplanation && (
-              <View className={`rounded-xl p-4 gap-2 ${isCorrect ? "bg-success/10 border border-success/30" : "bg-error/10 border border-error/30"}`}>
-                <Text className={`font-semibold ${isCorrect ? "text-success" : "text-error"}`}>
-                  {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
-                </Text>
-                <Text className="text-sm text-foreground">{scenario.explanation}</Text>
+              <View className="gap-3">
+                <View className={`rounded-xl p-4 gap-2 ${isCorrect ? "bg-success/10 border border-success/30" : "bg-error/10 border border-error/30"}`}>
+                  <Text className={`font-semibold ${isCorrect ? "text-success" : "text-error"}`}>
+                    {isCorrect ? "✓ Correct!" : "✗ Incorrect"}
+                  </Text>
+                  <Text className="text-sm text-foreground">{scenario.explanation}</Text>
+                </View>
+                {scenario.videoUrl && (
+                  <TouchableOpacity
+                    className="bg-primary/10 border border-primary rounded-xl p-4 flex-row justify-between items-center"
+                    onPress={() => WebBrowser.openBrowserAsync(scenario.videoUrl)}
+                  >
+                    <View className="flex-1 gap-1">
+                      <Text className="text-sm font-semibold text-primary">Watch Related Video</Text>
+                      <Text className="text-xs text-muted">Learn more about this concept</Text>
+                    </View>
+                    <IconSymbol size={20} name="arrow.up.right" color={colors.primary} />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>

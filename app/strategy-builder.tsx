@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, TextInput } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -17,6 +18,14 @@ export default function StrategyBuilderScreen() {
 
   const markets = ["Forex", "Stocks", "Crypto"];
   const styles = ["Scalping", "Day Trading", "Swing Trading"];
+  
+  const videoLinks = {
+    market: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    style: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    entry: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    exit: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    risk: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  };
 
   const handleNext = () => {
     if (step < 5) setStep(step + 1);
@@ -57,6 +66,25 @@ export default function StrategyBuilderScreen() {
               <View className="h-full bg-primary" style={{ width: `${(step / 5) * 100}%` }} />
             </View>
           </View>
+
+          {/* Help Video */}
+          <TouchableOpacity
+            className="bg-primary/10 border border-primary rounded-xl p-3 flex-row justify-between items-center"
+            onPress={() => {
+              let videoUrl = videoLinks.market;
+              if (step === 2) videoUrl = videoLinks.style;
+              else if (step === 3) videoUrl = videoLinks.entry;
+              else if (step === 4) videoUrl = videoLinks.exit;
+              else if (step === 5) videoUrl = videoLinks.risk;
+              WebBrowser.openBrowserAsync(videoUrl);
+            }}
+          >
+            <View className="flex-1 gap-1">
+              <Text className="text-xs font-semibold text-primary">Need help?</Text>
+              <Text className="text-xs text-muted">Watch tutorial for this step</Text>
+            </View>
+            <IconSymbol size={18} name="arrow.up.right" color={colors.primary} />
+          </TouchableOpacity>
 
           {/* Step Content */}
           <View className="gap-4">

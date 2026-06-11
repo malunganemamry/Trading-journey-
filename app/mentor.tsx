@@ -1,4 +1,5 @@
 import { ScrollView, Text, View, TouchableOpacity, TextInput } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -68,6 +69,27 @@ export default function MentorScreen() {
             </View>
           ))}
         </ScrollView>
+
+        {/* Resource Links */}
+        <View className="gap-2">
+          <Text className="text-sm font-semibold text-foreground">Learning Resources</Text>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              className="flex-1 bg-primary/10 border border-primary rounded-lg p-3 items-center"
+              onPress={() => WebBrowser.openBrowserAsync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+            >
+              <IconSymbol size={20} name="arrow.up.right" color={colors.primary} />
+              <Text className="text-xs text-primary font-semibold mt-1">Trading Videos</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 bg-primary/10 border border-primary rounded-lg p-3 items-center"
+              onPress={() => WebBrowser.openBrowserAsync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+            >
+              <IconSymbol size={20} name="arrow.up.right" color={colors.primary} />
+              <Text className="text-xs text-primary font-semibold mt-1">Strategies</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Suggested Questions */}
         <View className="gap-2">
