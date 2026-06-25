@@ -29,7 +29,7 @@ export default function PsychologyScreen() {
       explanation:
         "The correct answer is B. Following your plan and maintaining discipline is crucial. Revenge trading (C) or increasing risk (A) often leads to bigger losses. Stick to your strategy.",
       skillsImproved: ["discipline", "emotionalControl"],
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      videoUrl: "https://www.youtube.com/watch?v=A8vU-ZpL9-4",
     },
     {
       id: "s2",
@@ -43,7 +43,7 @@ export default function PsychologyScreen() {
       explanation:
         "The correct answer is B. Discipline means following your risk rules even when opportunities seem perfect. FOMO (fear of missing out) is a trader's enemy. There will always be more trades.",
       skillsImproved: ["discipline", "consistency"],
-      videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      videoUrl: "https://www.youtube.com/watch?v=Q73uB7-pD0Y",
     },
   ];
 

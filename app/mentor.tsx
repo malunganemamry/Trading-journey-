@@ -4,9 +4,11 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function MentorScreen() {
   const colors = useColors();
+  const router = useRouter();
   const [messages, setMessages] = useState([
     {
       id: "m1",
@@ -76,17 +78,17 @@ export default function MentorScreen() {
           <View className="flex-row gap-2">
             <TouchableOpacity
               className="flex-1 bg-primary/10 border border-primary rounded-lg p-3 items-center"
-              onPress={() => WebBrowser.openBrowserAsync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+              onPress={() => router.push("/(tabs)/learn")}
             >
-              <IconSymbol size={20} name="arrow.up.right" color={colors.primary} />
-              <Text className="text-xs text-primary font-semibold mt-1">Trading Videos</Text>
+              <IconSymbol size={20} name="book.fill" color={colors.primary} />
+              <Text className="text-xs text-primary font-semibold mt-1">Learning Path</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 bg-primary/10 border border-primary rounded-lg p-3 items-center"
-              onPress={() => WebBrowser.openBrowserAsync("https://www.youtube.com/watch?v=dQw4w9WgXcQ")}
+              onPress={() => router.push("/journal-list")}
             >
-              <IconSymbol size={20} name="arrow.up.right" color={colors.primary} />
-              <Text className="text-xs text-primary font-semibold mt-1">Strategies</Text>
+              <IconSymbol size={20} name="pencil" color={colors.primary} />
+              <Text className="text-xs text-primary font-semibold mt-1">Review Journal</Text>
             </TouchableOpacity>
           </View>
         </View>

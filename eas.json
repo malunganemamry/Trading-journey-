@@ -7,6 +7,18 @@
       "android": {
         "buildType": "apk"
       }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://onpkdegzraobjmpihsuq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ucGtkZWd6cmFvYmptcGloc3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MjIyNjQsImV4cCI6MjA5NzQ5ODI2NH0.PJADBm6vLCfq9lEjgRcqQ3eBOMBzdMAW1Nl0OHPmsR4"
+      }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }

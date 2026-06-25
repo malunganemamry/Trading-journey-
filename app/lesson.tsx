@@ -1,63 +1,108 @@
-import { ScrollView, Text, View, TouchableOpacity, Pressable } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/use-auth";
+
+type Lesson = {
+  id: number;
+  title: string;
+  content: string;
+  video_url: string;
+  estimated_time: number;
+};
 
 export default function LessonScreen() {
   const colors = useColors();
   const router = useRouter();
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizAnswers, setQuizAnswers] = useState<number[]>([-1, -1, -1]);
+  const { lessonId } = useLocalSearchParams();
+  const { user } = useAuth();
+  
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [completing, setCompleting] = useState(false);
 
-  const lesson = {
-    id: "mb1",
-    title: "What is a Stock?",
-    category: "Market Basics",
-    content: `A stock represents a share of ownership in a company. When you buy stock, you become a partial owner of that company. 
+  useEffect(() => {
+    if (lessonId) fetchLesson();
+  }, [lessonId]);
 
-Stocks are traded on exchanges like the NYSE or NASDAQ. Companies issue stocks to raise capital for growth and operations.
+  async function fetchLesson() {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('id', lessonId)
+        .single();
 
-Key benefits of stock ownership:
-• Capital appreciation - potential for price growth
-• Dividends - regular payments from company profits
-• Voting rights - influence in company decisions
-• Liquidity - easy to buy and sell
+      if (error) throw error;
+      setLesson(data);
+    } catch (error) {
+      console.error('Error fetching lesson:', error);
+      Alert.alert('Error', 'Failed to load lesson content.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
-Understanding stocks is the foundation of trading education.`,
-    estimatedTime: 15,
-    videoRecommendations: [
-      { id: "v1", title: "Stock Basics Explained", duration: 8, level: "Beginner", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", watched: false, helpful: null },
-      { id: "v2", title: "How to Read Stock Charts", duration: 12, level: "Beginner", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", watched: false, helpful: null },
-    ],
-    quiz: [
-      {
-        id: "q1",
-        question: "What does owning a stock mean?",
-        options: ["Ownership in a company", "A loan to a company", "A bond issued by the company", "Currency exchange"],
-        correctAnswer: 0,
-      },
-      {
-        id: "q2",
-        question: "Where are stocks traded?",
-        options: ["Banks", "Stock exchanges", "Real estate offices", "Government offices"],
-        correctAnswer: 1,
-      },
-      {
-        id: "q3",
-        question: "What is a dividend?",
-        options: ["A fee for trading", "A regular payment from company profits", "A stock price increase", "A trading strategy"],
-        correctAnswer: 1,
-      },
-    ],
-  };
+  async function completeLesson() {
+    if (!user || !lesson) return;
+    setCompleting(true);
+    try {
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: user.id,
+          lesson_id: lesson.id,
+          completed_at: new Date().toISOString()
+        });
 
-  const allAnswered = quizAnswers.every((a) => a !== -1);
-  const correctAnswers = quizAnswers.filter((a, i) => a === lesson.quiz[i].correctAnswer).length;
-  const score = (correctAnswers / lesson.quiz.length) * 100;
-  const passed = score >= 70;
+      if (error) throw error;
+      
+      // Update profile lesson count
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('lessons_completed')
+        .eq('id', user.id)
+        .single();
+      
+      await supabase
+        .from('profiles')
+        .update({ lessons_completed: (profile?.lessons_completed || 0) + 1 })
+        .eq('id', user.id);
+
+      Alert.alert('Success', 'Lesson completed!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error) {
+      console.error('Error completing lesson:', error);
+      Alert.alert('Error', 'Failed to save progress.');
+    } finally {
+      setCompleting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <ScreenContainer className="justify-center items-center">
+        <ActivityIndicator size="large" color={colors.primary} />
+      </ScreenContainer>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <ScreenContainer className="p-4 items-center justify-center">
+        <Text className="text-foreground">Lesson not found.</Text>
+        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+          <Text className="text-primary font-bold">Go Back</Text>
+        </TouchableOpacity>
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer className="p-4">
@@ -67,108 +112,53 @@ Understanding stocks is the foundation of trading education.`,
           <View className="gap-1">
             <TouchableOpacity onPress={() => router.back()}>
               <View className="flex-row items-center gap-2">
-                <IconSymbol size={24} name="chevron.left.forwardslash.chevron.right" color={colors.primary} />
+                <IconSymbol size={24} name="chevron.left" color={colors.primary} />
                 <Text className="text-sm text-primary font-semibold">Back</Text>
               </View>
             </TouchableOpacity>
             <View className="flex-row items-center gap-2 mt-2">
               <View className="bg-primary/20 rounded-full px-3 py-1">
-                <Text className="text-xs font-semibold text-primary">{lesson.category}</Text>
+                <Text className="text-xs font-semibold text-primary">Lesson</Text>
               </View>
-              <Text className="text-xs text-muted">{lesson.estimatedTime} min</Text>
+              <Text className="text-xs text-muted">{lesson.estimated_time} min</Text>
             </View>
             <Text className="text-3xl font-bold text-foreground mt-2">{lesson.title}</Text>
           </View>
 
-          {!showQuiz ? (
-            <>
-              {/* Content */}
-              <View className="bg-surface rounded-xl p-4 border border-border gap-3">
-                <Text className="text-base leading-relaxed text-foreground">{lesson.content}</Text>
-              </View>
+          {/* Content */}
+          <View className="bg-surface rounded-xl p-4 border border-border gap-3">
+            <Text className="text-base leading-relaxed text-foreground">{lesson.content}</Text>
+          </View>
 
-              {/* Videos */}
-              <View className="gap-3">
-                <Text className="text-lg font-semibold text-foreground">Recommended Videos</Text>
-                {lesson.videoRecommendations.map((video) => (
-                  <TouchableOpacity
-                    key={video.id}
-                    className="bg-surface rounded-xl p-4 border border-border flex-row justify-between items-center"
-                    onPress={() => WebBrowser.openBrowserAsync(video.url)}
-                  >
-                    <View className="flex-1 gap-1">
-                      <Text className="text-base font-semibold text-foreground">{video.title}</Text>
-                      <Text className="text-sm text-muted">{video.duration} minutes • {video.level}</Text>
-                    </View>
-                    <IconSymbol size={24} name="arrow.up.right" color={colors.primary} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Start Quiz Button */}
+          {/* Video Section */}
+          {lesson.video_url && (
+            <View className="gap-3">
+              <Text className="text-lg font-semibold text-foreground">Video Content</Text>
               <TouchableOpacity
-                className="bg-primary rounded-xl p-4 items-center"
-                onPress={() => setShowQuiz(true)}
+                className="bg-surface rounded-xl p-4 border border-border flex-row justify-between items-center"
+                onPress={() => WebBrowser.openBrowserAsync(lesson.video_url)}
               >
-                <Text className="text-background font-bold text-lg">Take Quiz</Text>
+                <View className="flex-1 gap-1">
+                  <Text className="text-base font-semibold text-foreground">Watch Tutorial</Text>
+                  <Text className="text-sm text-muted">Learn visually from YouTube</Text>
+                </View>
+                <IconSymbol size={24} name="play.circle.fill" color={colors.primary} />
               </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              {/* Quiz */}
-              <View className="gap-4">
-                <Text className="text-2xl font-bold text-foreground">Lesson Quiz</Text>
-                {lesson.quiz.map((question, index) => (
-                  <View key={question.id} className="gap-2">
-                    <Text className="text-base font-semibold text-foreground">{index + 1}. {question.question}</Text>
-                    <View className="gap-2">
-                      {question.options.map((option, optionIndex) => (
-                        <Pressable
-                          key={optionIndex}
-                          onPress={() => {
-                            const newAnswers = [...quizAnswers];
-                            newAnswers[index] = optionIndex;
-                            setQuizAnswers(newAnswers);
-                          }}
-                          style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-                        >
-                          <View
-                            className={`p-3 rounded-lg border-2 ${
-                              quizAnswers[index] === optionIndex
-                                ? "bg-primary border-primary"
-                                : "bg-surface border-border"
-                            }`}
-                          >
-                            <Text
-                              className={`text-sm font-semibold ${
-                                quizAnswers[index] === optionIndex ? "text-background" : "text-foreground"
-                              }`}
-                            >
-                              {option}
-                            </Text>
-                          </View>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              {/* Submit Button */}
-              {allAnswered && (
-                <TouchableOpacity
-                  className={`rounded-xl p-4 items-center ${passed ? "bg-success" : "bg-primary"}`}
-                  onPress={() => {
-                    // Show results
-                    alert(`Quiz Complete!\n\nScore: ${Math.round(score)}%\n${passed ? "✓ Passed!" : "Try again"}`);
-                    setShowQuiz(false);
-                  }}
-                >
-                  <Text className="text-background font-bold text-lg">Submit Quiz</Text>
-                </TouchableOpacity>
-              )}
-            </>
+            </View>
           )}
+
+          {/* Complete Button */}
+          <TouchableOpacity
+            className="bg-primary rounded-xl p-4 items-center mb-10"
+            onPress={completeLesson}
+            disabled={completing}
+          >
+            {completing ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-background font-bold text-lg">Mark as Completed</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </ScreenContainer>

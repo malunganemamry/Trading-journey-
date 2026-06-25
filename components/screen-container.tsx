@@ -1,4 +1,4 @@
-import { View, type ViewProps } from "react-native";
+import { View, ActivityIndicator, type ViewProps } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
 import { cn } from "@/lib/utils";
@@ -21,6 +21,10 @@ export interface ScreenContainerProps extends ViewProps {
    * Additional className for the SafeAreaView (content layer).
    */
   safeAreaClassName?: string;
+  /**
+   * If true, shows a loading indicator.
+   */
+  loading?: boolean;
 }
 
 /**
@@ -44,6 +48,7 @@ export function ScreenContainer({
   className,
   containerClassName,
   safeAreaClassName,
+  loading = false,
   style,
   ...props
 }: ScreenContainerProps) {
@@ -61,7 +66,13 @@ export function ScreenContainer({
         className={cn("flex-1", safeAreaClassName)}
         style={style}
       >
-        <View className={cn("flex-1", className)}>{children}</View>
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        ) : (
+          <View className={cn("flex-1", className)}>{children}</View>
+        )}
       </SafeAreaView>
     </View>
   );

@@ -19,12 +19,13 @@ export default function StrategyBuilderScreen() {
   const markets = ["Forex", "Stocks", "Crypto"];
   const styles = ["Scalping", "Day Trading", "Swing Trading"];
   
+  // In production, these would fetch from Supabase
   const videoLinks = {
-    market: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    style: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    entry: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    exit: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    risk: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    market: "https://www.youtube.com/watch?v=kYI9w19N_nI",
+    style: "https://www.youtube.com/watch?v=9_p5_fE02qM",
+    entry: "https://www.youtube.com/watch?v=f9rX9H5_S28",
+    exit: "https://www.youtube.com/watch?v=6m8L6W5X6vI",
+    risk: "https://www.youtube.com/watch?v=8p_9U1y3Xv8",
   };
 
   const handleNext = () => {
@@ -195,8 +196,11 @@ export default function StrategyBuilderScreen() {
             </TouchableOpacity>
 
             {step === 5 ? (
-              <TouchableOpacity className="flex-1 bg-primary rounded-xl p-3 items-center" onPress={() => alert("Strategy saved!")}>
-                <Text className="text-background font-bold">Generate Strategy</Text>
+              <TouchableOpacity className="flex-1 bg-primary rounded-xl p-3 items-center" onPress={() => {
+                alert("Strategy saved to your profile!");
+                router.replace("/(tabs)/profile");
+              }}>
+                <Text className="text-background font-bold">Save Strategy</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity

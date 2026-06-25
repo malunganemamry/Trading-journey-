@@ -16,9 +16,9 @@ import {
 } from "react-native-safe-area-context";
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
-import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
-import { AssessmentProvider } from "@/lib/assessment-context";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { useRouter, useSegments } from "expo-router";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -64,8 +64,6 @@ export default function RootLayout() {
         },
       }),
   );
-  const [trpcClient] = useState(() => createTRPCClient());
-
   // Ensure minimum 8px padding for top and bottom on mobile
   const providerInitialMetrics = useMemo(() => {
     const metrics = initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame };
@@ -79,33 +77,51 @@ export default function RootLayout() {
     };
   }, [initialInsets, initialFrame]);
 
+  function AuthGuard({ children }: { children: React.ReactNode }) {
+    const { user, loading } = useAuth();
+    const segments = useSegments();
+    const router = useRouter();
+
+    useEffect(() => {
+      if (loading) return;
+
+      const inAuthGroup = segments[0] === "login";
+
+      if (!user && !inAuthGroup) {
+        router.replace("/login");
+      } else if (user && inAuthGroup) {
+        router.replace("/(tabs)");
+      }
+    }, [user, loading, segments]);
+
+    return <>{children}</>;
+  }
+
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AssessmentProvider>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <AuthProvider>
+        <AuthGuard>
           <QueryClientProvider client={queryClient}>
-          {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
-          {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
-          {/* in order for ios apps tab switching to work properly, use presentation: "fullScreenModal" for login page, whenever you decide to use presentation: "modal*/}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="oauth/callback" />
-            <Stack.Screen name="assessment" />
-            <Stack.Screen name="roadmap" />
-            <Stack.Screen name="lesson" />
-            <Stack.Screen name="books" />
-            <Stack.Screen name="progress" />
-            <Stack.Screen name="strategy-builder" />
-            <Stack.Screen name="backtesting" />
-            <Stack.Screen name="psychology" />
-            <Stack.Screen name="journal-list" />
-            <Stack.Screen name="mentor" />
-            <Stack.Screen name="prop-firm-prep" />
-          </Stack>
-          <StatusBar style="auto" />
-        </QueryClientProvider>
-      </trpc.Provider>
-      </AssessmentProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="oauth/callback" />
+              <Stack.Screen name="assessment" />
+              <Stack.Screen name="roadmap" />
+              <Stack.Screen name="lesson" />
+              <Stack.Screen name="books" />
+              <Stack.Screen name="progress" />
+              <Stack.Screen name="strategy-builder" />
+              <Stack.Screen name="backtesting" />
+              <Stack.Screen name="psychology" />
+              <Stack.Screen name="journal-list" />
+              <Stack.Screen name="mentor" />
+              <Stack.Screen name="prop-firm-prep" />
+            </Stack>
+            <StatusBar style="auto" />
+          </QueryClientProvider>
+        </AuthGuard>
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 

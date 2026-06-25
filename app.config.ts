@@ -36,6 +36,8 @@ const env = {
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
+  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+  supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
 };
 
 const config: ExpoConfig = {
@@ -124,6 +126,10 @@ const config: ExpoConfig = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
+  },
+  extra: {
+    supabaseUrl: env.supabaseUrl,
+    supabaseAnonKey: env.supabaseAnonKey,
   },
 };
 
