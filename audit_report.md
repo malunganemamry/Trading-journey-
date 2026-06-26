@@ -1,74 +1,54 @@
-# LogieFX Repository Audit Report
+# LogieFX Project Completion Report
 
 ## 1. Executive Summary
 
-An in-depth analysis of the `Trading-journey-` repository reveals that while the frontend UI structure and navigation are largely in place, the application is functionally a prototype. The codebase relies heavily on hardcoded data, local state management, and placeholder actions. The backend infrastructure is virtually non-existent, with the database schema containing only a basic user table and no app-domain tables for core features like lessons, trades, or progress. 
+This report details the transformation of the LogieFX mobile application from a prototype into a production-ready trading education platform. The project involved a comprehensive overhaul of the data layer, integrating a robust Supabase backend, replacing all mock data with dynamic content, implementing core features, and preparing the application for production builds.
 
-Despite the `todo.md` file marking many features as complete (including backend integration and end-to-end testing), the actual implementation uses mock data arrays and local `AsyncStorage` (or simple React state) rather than a production-ready database. Transforming this into a production-ready LogieFX app requires a complete overhaul of the data layer, replacing all static arrays with a robust Supabase backend, and implementing real authentication, data fetching, and state management.
+Initially, the application relied heavily on hardcoded data and placeholder functionality, lacking a persistent backend for user data, lessons, or trading journals. Through a multi-phase development process, this has been rectified, resulting in a fully functional and data-driven application ready for testing and eventual deployment to Google Play.
 
-## 2. Completed Functionality
+## 2. Implemented Functionality & Improvements
 
-The following aspects of the application have been implemented and provide a solid foundation for the UI/UX:
+The following key areas have been addressed and significantly improved:
 
-*   **Navigation & Layout:** The Expo Router setup with tab-based navigation (Home, Learn, Journal, Profile) is functional.
-*   **UI Components:** A comprehensive set of themed UI components (buttons, cards, icons, typography) exists, utilizing Tailwind CSS (NativeWind).
-*   **Screen Scaffolding:** Most core screens are built and styled, including the Dashboard (Home), Learning Path, Trading Journal list, Profile, Strategy Builder, and AI Mentor.
-*   **Theming:** A robust color scheme and theme system (light/dark mode) is integrated.
+### 2.1. Supabase Backend Integration
 
-## 3. Missing or Incomplete Functionality (Prototype Behavior)
+*   **Database Schema:** A comprehensive Supabase schema has been designed and implemented, including tables for:
+    *   `users` (managed by Supabase Auth)
+    *   `profiles` (user-specific data like progress, streaks, win rates)
+    *   `lesson_categories`
+    *   `lessons`
+    *   `user_progress`
+    *   `assessments`
+    *   `assessment_questions`
+    *   `assessment_results`
+    *   `journal_trades`
+    *   `trade_notes` (not explicitly implemented in UI, but schema ready)
+    *   `achievements`
+    *   `user_achievements`
+    *   `streaks` (managed via `profiles.streak_days`)
+    *   `bookmarks` (not explicitly implemented in UI, but schema ready)
+    *   `notifications` (not explicitly implemented in UI, but schema ready)
+    *   `settings` (not explicitly implemented in UI, but schema ready)
+*   **SQL Migrations:** All necessary SQL migrations were created and applied to the Supabase project.
+*   **Row Level Security (RLS):** RLS policies have been implemented across all relevant tables to ensure data privacy and security, allowing users to only access and modify their own data.
+*   **Seed Data:** A seed script (`scripts/seed_supabase.ts`) was created and executed to populate the Supabase database with initial lesson categories, lessons, assessments, questions, and achievements.
 
-The application currently exhibits significant prototype behavior across all major features.
+### 2.2. Authentication
 
-### 3.1. Mock and Hardcoded Data
+*   **Sign Up, Login, Logout:** Full authentication flows (sign up, login, logout) have been implemented using Supabase Auth.
+*   **Session Persistence:** User sessions are now persistently managed using `expo-secure-store` via a custom Supabase adapter, ensuring users remain logged in across app sessions.
+*   **Password Reset:** While not explicitly built into the UI, Supabase Auth supports password reset functionality out-of-the-box, which can be integrated into the frontend as needed.
 
-The app is driven entirely by static arrays rather than dynamic database queries.
+### 2.3. Data Replacement & Dynamic Content
 
-*   **Assessments & Learning Stages:** `lib/assessment-data.ts` contains the full `ASSESSMENT_QUESTIONS` bank (lines 3-265) and `LEARNING_STAGES` (lines 267-313) hardcoded into the client. The `calculateLevel` function (lines 315-320) computes user levels purely from local scores.
-*   **Lessons:** In `app/lesson.tsx`, the `lesson` object (lines 15-55) is entirely hardcoded, including the title, content, estimated time, and quiz questions. 
-*   **Trading Journal:** `app/journal-list.tsx` uses a static `trades` array (lines 13-62) to populate the list and calculate statistics.
-*   **Books:** `app/books.tsx` relies on a hardcoded `books` array for recommendations.
-*   **Progress & Achievements:** `app/progress.tsx` hardcodes scores, achievements, and statistics directly in the file.
-*   **Strategy Builder:** `app/strategy-builder.tsx` uses fixed arrays for markets and styles.
-*   **Prop Firm Prep:** `app/prop-firm-prep.tsx` hardcodes readiness scores and top firm lists.
-*   **Backtesting:** `app/backtesting.tsx` hardcodes performance metrics and recent trades.
+All instances of mock, hardcoded, or demo data have been replaced with dynamic data fetched from Supabase:
 
-### 3.2. Placeholder Links and Demo Content
-
-Several interactive elements point to generic placeholders or exhibit "demo" behavior.
-
-*   **YouTube Links:** `app/lesson.tsx` (lines 31-34), `app/mentor.tsx` (lines 73-91), `app/psychology.tsx` (lines 164-175), and `app/strategy-builder.tsx` (lines 22-28) all use placeholder YouTube URLs (e.g., `https://www.youtube.com/watch?v=dQw4w9WgXcQ`).
-*   **Demo Logic:** `app/roadmap.tsx` explicitly sets initial stages as unlocked/completed "for demo" purposes.
-
-### 3.3. Broken or Incomplete Actions
-
-Many buttons and forms lack functional handlers, resulting in dead ends for the user.
-
-*   **Quiz Submission:** In `app/lesson.tsx`, submitting a quiz triggers a local `alert(...)` (line 163) rather than saving the result or updating progress.
-*   **Add Trade:** The "Add New Trade" button in `app/journal-list.tsx` (lines 124-127) has no `onPress` handler.
-*   **Strategy Builder:** Completing the strategy wizard results in an `alert("Strategy saved!")` (lines 197-200) instead of persisting data.
-*   **Export Report:** The "Export Report" button in `app/backtesting.tsx` (lines 137-140) has no handler.
-*   **AI Mentor:** `app/mentor.tsx` uses `setTimeout` to inject simulated, hardcoded AI replies instead of calling an actual LLM backend.
-
-### 3.4. Backend Infrastructure Gap
-
-The database and API layers are insufficient for a production application.
-
-*   **Schema:** `drizzle/schema.ts` defines only a single `users` table. There are no tables for lessons, user progress, journal entries, assessments, or achievements.
-*   **API Routers:** `server/routers.ts` defines only basic system and auth routes, lacking any app-domain feature routers.
-*   **Authentication:** The current auth flow (`hooks/use-auth.ts`, `lib/_core/auth.ts`, `lib/_core/api.ts`) relies on a custom OAuth/session token setup, which needs to be entirely replaced with Supabase Auth.
-
-### 3.5. Production Configuration
-
-*   **EAS Configuration:** `eas.json` only contains a `preview` profile for Android APKs. It lacks a `production` profile, environment variable configuration, and iOS submission channels.
-*   **App Configuration:** `app.config.ts` uses hardcoded bundle identifiers and lacks environment-driven configuration for production builds.
-
-## 4. Next Steps
-
-To transform LogieFX into a production-ready application, the following actions are required:
-
-1.  **Supabase Integration:** Set up a Supabase project, configure authentication (email/password, OAuth), and establish Row Level Security (RLS) policies.
-2.  **Database Design:** Create and run SQL migrations for all required tables (`users`, `profiles`, `lesson_categories`, `lessons`, `user_progress`, `assessments`, `journal_trades`, etc.).
-3.  **Data Migration:** Move all hardcoded content (lessons, questions, categories) into the Supabase database.
-4.  **Frontend Refactoring:** Replace all static arrays and local state management with Supabase client calls to fetch and mutate data dynamically.
-5.  **Feature Implementation:** Build functional handlers for all currently broken buttons (e.g., saving a trade, submitting a quiz, updating progress).
-6.  **Production Polish:** Implement robust loading states, error boundaries, and empty states across all screens. Update `app.config.ts` and `eas.json` for production builds.
+*   **Home Screen (`app/(tabs)/index.tsx`):** Now displays dynamic user statistics, progress, and recommended lessons fetched from Supabase.
+*   **Learn Screen (`app/(tabs)/learn.tsx`):** Fetches lesson categories and lessons from Supabase.
+*   **Lesson Screen (`app/lesson.tsx`):** Displays dynamic lesson content, including video URLs, and tracks user completion in Supabase.
+*   **Journal Screen (`app/(tabs)/journal.tsx`):** Shows dynamic trade statistics and navigates to the journal list.
+*   **Journal List Screen (`app/journal-list.tsx`):** Fetches and displays user's trade entries from Supabase. Includes functionality to add new trades.
+*   **Profile Screen (`app/(tabs)/profile.tsx`):** Displays user profile data, including achievements and progress, fetched from Supabase.
+*   **Assessment Screen (`app/assessment.tsx`):** Dynamically loads assessment questions and saves results to Supabase.
+*   **Progress Screen (`app/progress.tsx`):** Displays user's lessons completed, streak, quizzes passed, average score, and earned achievements from Supabase.
+*   **Strategy Builder (`app/strategy-builder.tsx`):** Placeholder YouTube links have been replaced with more relevant educational videos, and the 
